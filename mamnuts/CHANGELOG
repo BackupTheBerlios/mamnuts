@@ -1,0 +1,76 @@
+MAMNUTS CHANEGLOG:
+
+Following the directions that can be read at
+http://mindboosternoori.blogspot.com/2005/11/building-talker.html , the idea os
+MAMNUTS is to provide a secure an stable code base until AmNUTS 2.3.0 isn't
+done. Here's the roadmap:
+
+v1.0:
+Release MAMNUTS as AmNUTS CVS is right now, but with the changes to show that
+this is MAMNUTS and not AmNUTS.
+This won't be a bug-free version, but will be the most bugless talker base
+there is...
+
+v1.1:
+Fix #3: The easy fix is to take out the .sreboot command.
+
+v1.2:
+Fix #11: The easy fix is to take out the .kill command.
+
+v1.3:
+Fix #23: The easy fix is to take out .xcom and .gcom commands.
+Fixed the wrapper bug ( http://mamnuts.blogspot.com/2005/12/bug.html )
+
+v1.4:
+Fix #46: http://amnuts.dune.net/bugzilla/show_bug.cgi?id=46
+
+v1.5:
+Spodlist was utterly broken for some compilers, so it was removed.
+Description length is now variable with the maximum name length.
+Grep user was somewhat broken in the presentation layer, so it was removed.
+The clear screen function now does the right thing and sends the clear screen
+escape character. Since not every "telnet client" supports it (shame on them!)
+the character is still preceeded by a flood of new lines (more, this time), so
+nobody looses .cls functionality.
+
+v1.6:
+Now there are helpfiles in English or Portuguese. The default is English, but
+you just have to change the config file to point out to the Portuguese support.
+Thanks to NomadWolf for helping with the translation. If you know any other
+language and want to contribute with translations, we'll gladly accept your
+help and include them!
+user->recap now resets the terminal colours. That will make an usefull use of
+user->recap and user->bw_recap in a way that you'll never need to escape
+colours to do whatever you want.
+.read shows user->recap instead of user->bw_recap .
+
+v1.7:
+Fixed a bug on user descriptions.
+
+v1.8:
+Purged MANDNS code from Mamnuts. This code, despite having better performance
+in BSD systems, isn't that well written (as we can see with the use of
+isspace()), and uses popen, which is a blocking call. This also improoves the
+talker performance in Solaris systems.
+
+v1.8.1:
+Fixed a big load of bugs. Some where killed by removing some funcionalities,
+being the biggest, probably, personal rooms. If you want to contribute with a
+well-written bugless patch to implement dynamic rooms, please, PLEASE contact
+me. Otherwise, we won't have them for a looong time... Check ROADMAP to see
+what I'm talking about here.
+New .visual command added, but commented on the code, since it still has some
+bugs. Uncomment and use it on your own risk... I intend to fix that code and
+have it on mamnuts ASAP. The biggest problem with that code is that it won't
+even compile in some systems. If you're using Linux, you'll probably have to
+worries, but I can't promiss anything.
+
+v1.8.2:
+Even if mamnuts isn't about "creating new commands", there are commands that
+are really nice to have. Thus, this version adds .sto.
+
+v1.8.3:
+SECURITY FIX: avoided a buffer overflow on .wizlist by removing it. Take in
+consideration that this bug puts your talker (and talker account) security in
+risk, and is present in ANY VERSION of Amnuts and Mamnuts!!! More information
+about this bug will be given by request.

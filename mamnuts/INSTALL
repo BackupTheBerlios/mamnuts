@@ -1,0 +1,25 @@
++-----------------------------------------------------------------------------+
+ INSTALL - INSTALL - INSTALL - INSTALL - INSTALL - INSTALL - INSTALL - INSTALL
++-----------------------------------------------------------------------------+
+
+Welcome to the Mamnuts talker code.
+
+I should make a better instalation guide, I know, but for now let's just say 
+this:
+
+To compile the talker you must:
+
+$ cd src
+$ make
+$ make install
+
+Now, in the main directory of the talker you have a binary called 'mamnuts'.
+Just do
+
+$ ./mamnuts 
+
+to run it.
+
+Feel free to ask any questions sending an e-mail to Marcos.Marado@sonae.com .
+
++-----------------------------------------------------------------------------+
