@@ -18,29 +18,25 @@ MAKEDEPEND      = $(CC) -MM
 #MAKEDEPEND     = makedepend -f -
 
 # GAMES => include games (i.e., hangman, gun duelling, money)
-# WIZPORT => include support for wizport
-# NETLINKS => include support for netlinks
 # IDENTD => include support for "ident" daemon for name resolution
 # ISOWEEKS => use ISO 8601 week calendars (Mon-Sun; first week has 4+ days).
 # DOUBLEFORK => use old double_fork() code (actually quad fork() with system())
 # DUMPCORE => cause crash actions to dump core and exit for debugging
 #TALKERCPPFLAGS = -I$(INCDIR)
 #TALKERCPPFLAGS = -I$(INCDIR) -DGAMES
-#TALKERCPPFLAGS = -I$(INCDIR) -DWIZPORT -DGAMES
-#TALKERCPPFLAGS = -I$(INCDIR) -DNETLINKS -DWIZPORT -DGAMES
-#TALKERCPPFLAGS = -I$(INCDIR) -DIDENTD -DNETLINKS -DWIZPORT -DGAMES
-#TALKERCPPFLAGS = -I$(INCDIR) -DIDENTD -DNETLINKS -DWIZPORT -DGAMES
-TALKERCPPFLAGS = -I$(INCDIR) -DIDENTD -DWIZPORT -DGAMES
+#TALKERCPPFLAGS = -I$(INCDIR) -DIDENTD
+TALKERCPPFLAGS = -I$(INCDIR) -DIDENTD -DGAMES
 
 # DEBUG => include copious debugging output to stdout
 IDENTDCPPFLAGS = -I$(INCDIR)
 #IDENTDCPPFLAGS = -I$(INCDIR) -DDEBUG
 
 # These are sort of gcc dependant; roll your own if you use another compiler
-CFLAGS         = -g -O2 -Wall -W
-#CFLAGS         = -g -O2 -Wall -W
-#CFLAGS         = -g -O2 -Wall -W -Wfloat-equal -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wpacked -Wnested-externs -Winline -Wlong-long
+# CFLAGS         = -g -O2 -Wall -W
+CFLAGS         = -g -O2 -Wall -W -Wfloat-equal -Wundef -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wpacked -Wnested-externs -Winline -Wlong-long
+# CFLAGS         = -g -O2 -Wall -W -pedantic -Wfloat-equal -Wtraditional -Wundef -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Wconversion -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wpacked -Wpadded -Wredundant-decls -Wnested-externs -Wunreachable-code -Winline -Wlong-long
 #CFLAGS         = -g -O2 -Wall -W -pedantic -Wfloat-equal -Wtraditional -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wconversion -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wpacked -Wpadded -Wredundant-decls -Wnested-externs -Wunreachable-code -Winline -Wlong-long
+#CFLAGS         = -g -O2 -Wall -W -Wfloat-equal -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wpacked -Wnested-externs -Winline -Wlong-long
 # CFLAGS         = -g -O2 -Wall -W -pedantic -Wfloat-equal -Wtraditional -Wundef -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Wconversion -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wpacked -Wpadded -Wredundant-decls -Wnested-externs -Wunreachable-code -Winline -Wlong-long
 # CFLAGS         = -g -O2 -Wall -W -Wfloat-equal -Wundef -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wconversion -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wpacked -Wpadded -Wredundant-decls -Wnested-externs -Wunreachable-code -Winline -Wlong-long
 #CFLAGS         = -g -O2 -Wall -W -Wfloat-equal -Wundef -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wconversion -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wpacked -Wredundant-decls  -Wnested-externs -Wunreachable-code
