@@ -1,15 +1,3 @@
-/****************************************************************************
-         Amnuts version 2.3.0 - Copyright (C) Andrew Collington, 2003
-                      Last update: 2003-08-04
-
-                              amnuts@talker.com
-                          http://amnuts.talker.com/
-
-                                   based on
-
-   NUTS version 3.3.3 (Triple Three :) - Copyright (C) Neil Robertson 1996
- ***************************************************************************/
-
 #include "defines.h"
 #include "globals.h"
 #include "commands.h"
@@ -278,12 +266,6 @@ send_mail(UR_OBJECT user, char *to, char *ptr, int iscopy)
   FILE *infp, *outfp;
   int c, amount, size, tmp1, tmp2;
 
-#ifdef NETLINKS
-  tmp1 = mail_nl(user, to, ptr);
-  if (tmp1) {
-    return tmp1 != -1;
-  }
-#endif
   outfp = fopen("tempfile", "w");
   if (!outfp) {
     write_user(user, "Error in mail delivery.\n");
@@ -315,12 +297,6 @@ send_mail(UR_OBJECT user, char *to, char *ptr, int iscopy)
   *header = '\0';
   /* Put new mail in tempfile */
   if (user) {
-#ifdef NETLINKS
-    if (user->type == REMOTE_TYPE) {
-      sprintf(header, "~OLFrom: %s@%s  %s %s\n", user->bw_recap,
-              user->netlink->service, long_date(0), cc);
-    } else
-#endif
       sprintf(header, "~OLFrom: %s  %s %s\n", user->bw_recap, long_date(0),
               cc);
   } else {
@@ -405,13 +381,6 @@ smail(UR_OBJECT user, char *inpstr)
     }
     strcpy(user->mail_to, word[1]);
     if (word_count < 3) {
-#ifdef NETLINKS
-      if (user->type == REMOTE_TYPE) {
-        write_user(user,
-                   "Sorry, due to software limitations remote users cannot use the line editor.\nUse the \".smail <user> <text>\" method instead.\n");
-        return;
-      }
-#endif
       vwrite_user(user, "\n~BB*** Writing mail message to %s ***\n\n",
                   user->mail_to);
       user->misc_op = 4;
@@ -846,13 +815,6 @@ level_mail(UR_OBJECT user, char *inpstr)
       user->lmail_all = 0;
     }
     if (word_count < 3) {
-#ifdef NETLINKS
-      if (user->type == REMOTE_TYPE) {
-        write_user(user,
-                   "Sorry, due to software limitations remote users cannot use the line editor.\nUse the \".lmail <level>|wizzes|all <text>\" method instead.\n");
-        return;
-      }
-#endif
       if (!user->lmail_all) {
         vwrite_user(user,
                     "\n~FG*** Writing broadcast level mail message to all the %ss ***\n\n",
@@ -960,16 +922,8 @@ send_broadcast_mail(UR_OBJECT user, char *ptr, enum lvl_value lvl, int all)
     if (!user) {
       sprintf(header, "~OLFrom: MAILER  %s %s\n", long_date(0), cc);
     } else {
-#ifdef NETLINKS
-      if (user->type == REMOTE_TYPE) {
-        sprintf(header, "~OLFrom: %s@%s  %s %s\n", user->name,
-                user->netlink->service, long_date(0), cc);
-      } else
-#endif
-      {
-        sprintf(header, "~OLFrom: %s  %s %s\n", user->bw_recap, long_date(0),
+      sprintf(header, "~OLFrom: %s  %s %s\n", user->bw_recap, long_date(0),
                 cc);
-      }
     }
     fprintf(outfp, header);
     fputs(ptr, outfp);
@@ -1593,14 +1547,6 @@ write_board(UR_OBJECT user, char *inpstr)
       return;
     }
     if (word_count < 2) {
-#ifdef NETLINKS
-      if (user->type == REMOTE_TYPE) {
-        /* Editor will not work over netlink because all the prompts will go wrong */
-        write_user(user,
-                   "Sorry, due to software limitations remote users cannot use the line editor.\nUse the \".write <text>\" method instead.\n");
-        return;
-      }
-#endif
       write_user(user, "\n~BB*** Writing board message ***\n\n");
       user->misc_op = 3;
       editor(user, NULL);
@@ -1646,16 +1592,7 @@ write_board(UR_OBJECT user, char *inpstr)
      makes it easy for this program to check the age of each message and delete
      as appropriate in check_messages()
    */
-#ifdef NETLINKS
-  if (user->type == REMOTE_TYPE) {
-    sprintf(text, "PT: %d\r~OLFrom: %s@%s  %s\n", (int) (time(0)), name,
-            user->netlink->service, long_date(0));
-  } else
-#endif
-  {
-    sprintf(text, "PT: %d\r~OLFrom: %s  %s\n", (int) (time(0)), name,
-            long_date(0));
-  }
+  sprintf(text, "PT: %d\r~OLFrom: %s  %s\n", (int) (time(0)), name, long_date(0));
   fputs(text, fp);
   cnt = 0;
   for (c = inpstr; *c; ++c) {
@@ -2019,13 +1956,6 @@ suggestions(UR_OBJECT user, char *inpstr)
       return;
     }
     if (word_count < 2) {
-#ifdef NETLINKS
-      if (user->type == REMOTE_TYPE) {
-        write_user(user,
-                   "Sorry, due to software limitations remote users cannot use the line editor.\nUse the \".suggest <text>\" method instead.\n");
-        return;
-      }
-#endif
       write_user(user, "~BB~FG*** Writing a suggestion ***\n\n");
       user->misc_op = 8;
       editor(user, NULL);
@@ -2286,13 +2216,6 @@ friend_smail(UR_OBJECT user, char *inpstr)
     }
     if (word_count < 2) {
       /* go to the editor to smail */
-#ifdef NETLINKS
-      if (user->type == REMOTE_TYPE) {
-        write_user(user,
-                   "Sorry, due to software limitations remote users cannot use the line editor.\nUse the \".fsmail <text>\" method instead.\n");
-        return;
-      }
-#endif
       write_user(user,
                  "\n~BB*** Writing mail message to all your friends ***\n\n");
       user->misc_op = 24;

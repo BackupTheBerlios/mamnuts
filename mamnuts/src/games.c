@@ -1,15 +1,3 @@
-/****************************************************************************
-         Amnuts version 2.3.0 - Copyright (C) Andrew Collington, 2003
-                      Last update: 2003-08-04
-
-                              amnuts@talker.com
-                          http://amnuts.talker.com/
-
-                                   based on
-
-   NUTS version 3.3.3 (Triple Three :) - Copyright (C) Neil Robertson 1996
- ***************************************************************************/
-
 #ifdef GAMES
 
 #include "defines.h"
