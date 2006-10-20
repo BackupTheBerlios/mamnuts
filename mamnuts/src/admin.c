@@ -15,9 +15,6 @@ talker_shutdown(UR_OBJECT user, const char *str, int sdboot)
 {
   static char *args[] = { progname, confile, NULL };
   UR_OBJECT u, next;
-#ifdef NETLINKS
-  NL_OBJECT nl, nlnext;
-#endif
   const char *ptr;
 
   ptr = user ? user->bw_recap : str;
@@ -30,23 +27,11 @@ talker_shutdown(UR_OBJECT user, const char *str, int sdboot)
     write_room(NULL, "\007\n~OLSYSTEM:~FY~LI Rebooting now!!\n\n");
     write_syslog(SYSLOG, 0, "*** REBOOT initiated by %s ***\n", ptr);
   }
-#ifdef NETLINKS
-  for (nl = nl_first; nl; nl = nlnext) {
-    nlnext = nl->next;
-    shutdown_netlink(nl);
-  }
-#endif
   for (u = user_first; u; u = next) {
     next = u->next;
     disconnect_user(u);
   }
   close(amsys->mport_socket);
-#ifdef WIZPORT
-  close(amsys->wport_socket);
-#endif
-#ifdef NETLINKS
-  close(amsys->nlink_socket);
-#endif
   if (sdboot) {
     /* If someone has changed the binary or the config filename while this
        prog has been running this will not work */
@@ -184,63 +169,6 @@ reboot_com(UR_OBJECT user)
   no_prompt = 1;
 }
 
-
-/*
- * Seamless reboot talker interface func
- */
-void
-sreboot_com(UR_OBJECT user)
-{
-  if (!amsys->rs_which) {
-    write_user(user,
-               "The shutdown countdown is currently active, you must cancel it first.\n");
-    return;
-  }
-  if (!strcmp(word[1], "cancel")) {
-    if (!amsys->rs_countdown) {
-      write_user(user,
-                 "The seamless reboot countdown is not currently active.\n");
-      return;
-    }
-    if (amsys->rs_countdown && !amsys->rs_user) {
-      write_user(user,
-                 "Someone else is currently setting the seamless reboot countdown.\n");
-      return;
-    }
-    write_room(NULL, "~OLSYSTEM:~RS~FG Seamless reboot cancelled.\n");
-    write_syslog(SYSLOG, 1, "%s cancelled the seamless reboot countdown.\n",
-                 user->name);
-    amsys->rs_countdown = 0;
-    amsys->rs_announce = 0;
-    amsys->rs_which = -1;
-    amsys->rs_user = NULL;
-    return;
-  }
-  if (word_count > 1 && !is_number(word[1])) {
-    write_user(user, "Usage: sreboot [<secs>|cancel]\n");
-    return;
-  }
-  if (amsys->rs_countdown) {
-    write_user(user,
-               "The seamless reboot countdown is currently active, you must cancel it first.\n");
-    return;
-  }
-  if (word_count < 2) {
-    amsys->rs_countdown = 0;
-    amsys->rs_announce = 0;
-    amsys->rs_which = 2;
-    amsys->rs_user = NULL;
-  } else {
-    amsys->rs_countdown = atoi(word[1]);
-    amsys->rs_which = 2;
-  }
-  write_user(user,
-             "\n\07~FY~OL~LI*** WARNING - This will seamlessly reboot the talker! ***\n\nAre you sure about this (y|n)? ");
-  user->misc_op = 7;
-  no_prompt = 1;
-}
-
-
 #ifdef IDENTD
 /*
  * start up the ArIdent ident daemon
@@ -282,14 +210,8 @@ resite(UR_OBJECT user)
     for (u = user_first; u; u = u->next) {
       sprintf(buffer, "SITE: %s\n", u->ipsite);
       write_sock(amsys->ident_socket, buffer);
-#ifdef WIZPORT
-      sprintf(buffer, "AUTH: %d %s %s %s\n", u->socket, u->site_port,
-              !user->wizport ? amsys->mport_port : amsys->wport_port,
-              u->ipsite);
-#else
       sprintf(buffer, "AUTH: %d %s %s %s\n", u->socket, u->site_port,
               amsys->mport_port, u->ipsite);
-#endif
       write_sock(amsys->ident_socket, buffer);
     }
     write_user(user, "Refreshed site lookup of all users.\n");
@@ -302,13 +224,8 @@ resite(UR_OBJECT user)
   }
   sprintf(buffer, "SITE: %s\n", u->ipsite);
   write_sock(amsys->ident_socket, buffer);
-#ifdef WIZPORT
-  sprintf(buffer, "AUTH: %d %s %s %s\n", u->socket, u->site_port,
-          !user->wizport ? amsys->mport_port : amsys->wport_port, u->ipsite);
-#else
   sprintf(buffer, "AUTH: %d %s %s %s\n", u->socket, u->site_port,
           amsys->mport_port, u->ipsite);
-#endif
   write_sock(amsys->ident_socket, buffer);
   sprintf(text, "Refreshed site lookup for \"%s\".\n", u->name);
   write_user(user, text);
@@ -1943,13 +1860,6 @@ change_pass(UR_OBJECT user)
   }
   u = get_user(word[3]);
   if (u) {
-#ifdef NETLINKS
-    if (u->type == REMOTE_TYPE) {
-      write_user(user,
-                 "You cannot change the password of a user logged on remotely.\n");
-      return;
-    }
-#endif
     if (u->level >= user->level) {
       write_user(user,
                  "You cannot change the password of a user of equal or higher level than yourself.\n");
@@ -2000,73 +1910,6 @@ change_pass(UR_OBJECT user)
 }
 
 
-/*
- * Kill a user - bump them off the talker
- */
-void
-kill_user(UR_OBJECT user)
-{
-  struct kill_mesgs_struct
-  {
-    const char *victim_msg;
-    const char *room_msg;
-  };
-  static const struct kill_mesgs_struct kill_mesgs[] = {
-    {"You are killed\n", "%s is killed\n"},
-    {"You have been totally splatted\n", "A hammer splats %s\n"},
-    {"The Hedgehog Of Doom runs over you with a car.\n",
-     "The Hedgehog Of Doom runs over %s with a car.\n"},
-    {"The Inquisitor deletes the worthless, prunes away the wastrels... ie, YOU!", "The Inquisitor prunes away %s.\n"},
-    {NULL, NULL},
-  };
-  UR_OBJECT victim;
-  const char *name;
-  int msg;
-
-  if (word_count < 2) {
-    write_user(user, "Usage: kill <user>\n");
-    return;
-  }
-  victim = get_user_name(user, word[1]);
-  if (!victim) {
-    write_user(user, notloggedon);
-    return;
-  }
-  if (user == victim) {
-    write_user(user,
-               "Trying to commit suicide this way is the sixth sign of madness.\n");
-    return;
-  }
-  if (victim->level >= user->level) {
-    write_user(user,
-               "You cannot kill a user of equal or higher level than yourself.\n");
-    vwrite_user(victim, "%s~RS tried to kill you!\n", user->recap);
-    return;
-  }
-  write_syslog(SYSLOG, 1, "%s KILLED %s.\n", user->name, victim->name);
-  write_user(user, "~FM~OLYou chant an evil incantation...\n");
-  name = user->vis ? user->bw_recap : invisname;
-  vwrite_room_except(user->room, user,
-                     "~FM~OL%s chants an evil incantation...\n", name);
-  /*
-     display random kill message.  if you only want one message to be displayed
-     then only have one message listed in kill_mesgs[].
-   */
-  for (msg = 0; kill_mesgs[msg].victim_msg; ++msg) {;
-  }
-  if (msg) {
-    msg = rand() % msg;
-    write_user(victim, kill_mesgs[msg].victim_msg);
-    vwrite_room_except(victim->room, victim, kill_mesgs[msg].room_msg,
-                       victim->bw_recap);
-  }
-  sprintf(text, "~FRKilled~RS by %s.\n", user->name);
-  add_history(victim->name, 1, text);
-  disconnect_user(victim);
-  write_monitor(user, NULL, 0);
-  write_room(NULL,
-             "~FM~OLYou hear insane laughter from beyond the grave...\n");
-}
 
 
 /*
@@ -2125,7 +1968,7 @@ delete_user(UR_OBJECT user, int this_user)
     return;
   }
   if (get_user(word[1])) {
-    /* Safety measure just in case. Will have to .kill them first */
+    /* Safety measure just in case. Will have to .force quit them first */
     write_user(user,
                "You cannot delete a user who is currently logged on.\n");
     return;
@@ -2501,11 +2344,6 @@ force_save(UR_OBJECT user)
 
   cnt = 0;
   for (u = user_first; u; u = u->next) {
-#ifdef NETLINKS
-    if (u->type == REMOTE_TYPE) {
-      continue;
-    }
-#endif
     if (u->type == CLONE_TYPE || u->login) {
       continue;
     }
@@ -3003,15 +2841,6 @@ site(UR_OBJECT user)
   if (!u) {
     return;
   }
-#ifdef NETLINKS
-  /* if the user is remotely connected */
-  if (u->type == REMOTE_TYPE) {
-    vwrite_user(user, "%s~RS is remotely connected from %s.\n", u->recap,
-                u->site);
-    done_retrieve(u);
-    return;
-  }
-#endif
   if (retrieve_user_type == 1) {
     vwrite_user(user, "%s~RS is logged in from ~OL~FC%s~RS (%s:%s).\n",
                 u->recap, u->site, u->ipsite, u->site_port);
@@ -3158,23 +2987,7 @@ logging(UR_OBJECT user)
   }
   /* (un)set netlog bit */
   if (!strcmp(word[1], "-n")) {
-#ifdef NETLINKS
-    /* if already on */
-    if (amsys->logging & NETLOG) {
-      write_syslog(NETLOG, 1, "%s switched netlink logging OFF.\n",
-                   user->name);
-    }
-    amsys->logging ^= NETLOG;
-    /* if now on */
-    if (amsys->logging & NETLOG) {
-      write_syslog(NETLOG, 1, "%s switched netlink logging ON.\n",
-                   user->name);
-    }
-    vwrite_user(user, "You have now turned the netlink logging %s.\n",
-                amsys->logging & NETLOG ? "~OL~FGON~RS" : "~OL~FROFF~RS");
-#else
     write_user(user, "Netlinks are not currently active.\n");
-#endif
     return;
   }
   /* (un)set errlog bit */
@@ -3349,10 +3162,6 @@ system_details(UR_OBJECT user)
   int ucount, dcount, rmcount, cmdcount, lcount;
   int tsize;
   int uccount, rmpcount;
-#ifdef NETLINKS
-  NL_OBJECT nl;
-  int nlcount, nlupcount, nlicount, nlocount, rmnlicount;
-#endif
   enum lvl_value lvl;
   int days, hours, mins, secs;
 
@@ -3372,85 +3181,26 @@ system_details(UR_OBJECT user)
     mins = (secs % 3600) / 60;
     secs = secs % 60;
     /* Show header parameters */
-#ifdef NETLINKS
 #ifdef IDENTD
     if (amsys->ident_state) {
-#ifdef WIZPORT
-      write_user(user,
-                 "| talker pid      identd pid      main port      wiz port      netlinks port |\n");
-      vwrite_user(user,
-                  "|   %-5u           %-5u           %-5.5s         %-5.5s            %-5.5s     |\n",
-                  getpid(), amsys->ident_pid, amsys->mport_port,
-                  amsys->wport_port, amsys->nlink_port);
-#else
-      write_user(user,
-                 "| talker pid      identd pid      main port      netlinks port               |\n");
-      vwrite_user(user,
-                  "|   %-5u           %-5u           %-5.5s         %-5.5s                      |\n",
-                  getpid(), amsys->ident_pid, amsys->mport_port,
-                  amsys->nlink_port);
-#endif
-      write_user(user,
-                 "+----------------------------------------------------------------------------+\n");
-    } else
-#endif
-    {
-#ifdef WIZPORT
-      write_user(user,
-                 "| talker pid           main port            wiz port           netlinks port |\n");
-      vwrite_user(user,
-                  "|   %-5u               %-5.5s                %-5.5s                 %-5.5s     |\n",
-                  getpid(), amsys->mport_port, amsys->wport_port,
-                  amsys->nlink_port);
-#else
-      write_user(user,
-                 "| talker pid           main port            netlinks port                    |\n");
-      vwrite_user(user,
-                  "|   %-5u               %-5.5s                %-5.5s                           |\n",
-                  getpid(), amsys->mport_port, amsys->nlink_port);
-#endif
-      write_user(user,
-                 "+----------------------------------------------------------------------------+\n");
-    }
-#else
-#ifdef IDENTD
-    if (amsys->ident_state) {
-#ifdef WIZPORT
-      write_user(user,
-                 "| talker pid            identd pid             main port            wiz port |\n");
-      vwrite_user(user,
-                  "|   %-5u                  %-5u                 %-5.5s                %-5.5s  |\n",
-                  getpid(), amsys->ident_pid, amsys->mport_port,
-                  amsys->wport_port);
-#else
       write_user(user,
                  "| talker pid            identd pid             main port                     |\n");
       vwrite_user(user,
                   "|   %-5u                  %-5u                 %-5.5s                       |\n",
                   getpid(), amsys->ident_pid, amsys->mport_port);
-#endif
       write_user(user,
                  "+----------------------------------------------------------------------------+\n");
     } else
 #endif
     {
-#ifdef WIZPORT
-      write_user(user,
-                 "| talker pid                       main port                        wiz port |\n");
-      vwrite_user(user,
-                  "|   %-5u                            %-5.5s                           %-5.5s   |\n",
-                  getpid(), amsys->mport_port, amsys->wport_port);
-#else
       write_user(user,
                  "| talker pid                       main port                                 |\n");
       vwrite_user(user,
                   "|   %-5u                            %-5.5s                                   |\n",
                   getpid(), amsys->mport_port);
-#endif
       write_user(user,
                  "+----------------------------------------------------------------------------+\n");
     }
-#endif
     vwrite_user(user, "| %-17.17s : %-54.54s |\n", "talker booted", bstr);
     sprintf(text, "%d day%s, %d hour%s, %d minute%s, %d second%s", days,
             PLTEXT_S(days), hours, PLTEXT_S(hours), mins, PLTEXT_S(mins),
@@ -3542,66 +3292,11 @@ system_details(UR_OBJECT user)
     sprintf(foo, "%d day%s", NEWBIE_EXPIRES, PLTEXT_S(NEWBIE_EXPIRES));
     vwrite_user(user, "| %-24.24s: %-10.10s  %-24.24s: %-10.10s |\n",
                 "purge length (newbies)", foo, "purge length (users)", text);
-#ifdef WIZPORT
-    vwrite_user(user,
-                "| %-24.24s: %-10.10s                                       |\n",
-                "wizport min login level",
-                user_level[amsys->wizport_level].name);
-#endif
     write_user(user,
                "+----------------------------------------------------------------------------+\n\n");
     return;
   }
-  /* Netlinks Option */
-  if (!strcasecmp("-n", word[1])) {
-    write_user(user,
-               "+----------------------------------------------------------------------------+\n");
-    write_user(user,
-               "| ~OL~FCSystem Details - Netlinks~RS                                                  |\n");
-    write_user(user,
-               "|----------------------------------------------------------------------------|\n");
-#ifdef NETLINKS
-    rmnlicount = 0;
-    for (rm = room_first; rm; rm = rm->next) {
-      if (rm->inlink) {
-        ++rmnlicount;
-      }
-    }
-    nlcount = nlupcount = nlicount = nlocount = 0;
-    for (nl = nl_first; nl; nl = nl->next) {
-      ++nlcount;
-      if (nl->type != UNCONNECTED && nl->stage == UP) {
-        ++nlupcount;
-      }
-      if (nl->type == INCOMING) {
-        ++nlicount;
-      }
-      if (nl->type == OUTGOING) {
-        ++nlocount;
-      }
-    }
-    vwrite_user(user, "| %-21.21s: %5d          %-21.21s: %5d secs    |\n", "total netlinks", nlcount, "idle time out", amsys->net_idle_time);  /* XXX: Add amsys->keepalive_interval */
-    vwrite_user(user, "| %-21.21s: %5d          %-21.21s: %5d         |\n",
-                "accepting connects", rmnlicount, "live connects", nlupcount);
-    vwrite_user(user, "| %-21.21s: %5d          %-21.21s: %5d         |\n",
-                "incoming connections", nlicount, "outgoing connections",
-                nlocount);
-    vwrite_user(user, "| %-21.21s: %-13.13s  %-21.21s: %-13.13s |\n",
-                "remote user maxlevel",
-                user_level[amsys->rem_user_maxlevel].name,
-                "remote user deflevel",
-                user_level[amsys->rem_user_deflevel].name);
-    vwrite_user(user, "| %-21.21s: %5d bytes    %-21.21s: %5d bytes   |\n",
-                "netlink structure", (int) (sizeof *nl), "total memory",
-                nlcount * (int) (sizeof *nl));
-#else
-    write_user(user,
-               "| Netlinks are not currently compiled into the talker.                       |\n");
-#endif
-    write_user(user,
-               "+----------------------------------------------------------------------------+\n\n");
-    return;
-  }
+
   /* Room Option */
   if (!strcasecmp("-r", word[1])) {
     rmcount = rmpcount = 0;
@@ -3662,13 +3357,6 @@ system_details(UR_OBJECT user)
       ucount * (sizeof *u) + dcount * (sizeof *d) + rmcount * (sizeof *rm) +
       cmdcount * (sizeof *cmd) + (sizeof *amsys) +
       lcount * (sizeof *last_login_info);
-#ifdef NETLINKS
-    nlcount = 0;
-    for (nl = nl_first; nl; nl = nl->next) {
-      ++nlcount;
-    }
-    tsize += nlcount * (sizeof *nl);
-#endif
     write_user(user,
                "+----------------------------------------------------------------------------+\n");
     write_user(user,
@@ -3699,12 +3387,6 @@ system_details(UR_OBJECT user)
                 "| %-16.16s: %8d * %8d bytes = %8d total bytes         |\n",
                 "last logins", lcount, (int) (sizeof *last_login_info),
                 lcount * (int) (sizeof *last_login_info));
-#ifdef NETLINKS
-    vwrite_user(user,
-                "| %-16.16s: %8d * %8d bytes = %8d total bytes         |\n",
-                "netlinks", nlcount, (int) (sizeof *nl),
-                nlcount * (int) (sizeof *nl));
-#endif
     write_user(user,
                "+----------------------------------------------------------------------------+\n");
     vwrite_user(user,
@@ -4102,366 +3784,7 @@ set_command_level(UR_OBJECT user)
 
 
 /*
- * stop a user from using a certain command
- */
-void
-user_xcom(UR_OBJECT user)
-{
-  CMD_OBJECT cmd;
-  UR_OBJECT u;
-  size_t i, x;
-
-  if (word_count < 2) {
-    write_user(user, "Usage: xcom <user> [<command>]\n");
-    return;
-  }
-  u = get_user_name(user, word[1]);
-  if (!u) {
-    write_user(user, notloggedon);
-    return;
-  }
-  if (u == user) {
-    write_user(user, "You cannot ban any commands of your own.\n");
-    return;
-  }
-  /* if no command is given, then just view banned commands */
-  if (word_count < 3) {
-    write_user(user,
-               "+----------------------------------------------------------------------------+\n");
-    vwrite_user(user, "~OL~FCBanned commands for user \"%s~RS\"\n", u->recap);
-    write_user(user,
-               "+----------------------------------------------------------------------------+\n");
-    x = 0;
-    for (i = 0; i < MAX_XCOMS; ++i) {
-      if (u->xcoms[i] == -1) {
-        continue;
-      }
-      for (cmd = first_command; cmd; cmd = cmd->next) {
-        if (cmd->id == u->xcoms[i]) {
-          break;
-        }
-      }
-      if (!cmd) {
-        /* XXX: Maybe emit some sort of error? */
-        continue;
-      }
-      vwrite_user(user, "~OL%s~RS (level %d)\n", cmd->name, cmd->level);
-      ++x;
-    }
-    if (!x) {
-      write_user(user, "User has no banned commands.\n");
-    }
-    write_user(user,
-               "+----------------------------------------------------------------------------+\n\n");
-    return;
-  }
-  if (u->level >= user->level) {
-    write_user(user,
-               "You cannot ban the commands of a user with the same or higher level as yourself.\n");
-    return;
-  }
-  /* FIXME: command search order is different than command_table/exec_com()
-   * because it uses the alpha sorted command list instead! */
-  i = strlen(word[2]);
-  for (cmd = first_command; cmd; cmd = cmd->next) {
-    if (!strncmp(word[2], cmd->name, i)) {
-      break;
-    }
-  }
-  if (!cmd) {
-    write_user(user, "That command does not exist.\n");
-    return;
-  }
-  if (u->level < cmd->level) {
-    vwrite_user(user,
-                "%s is not of a high enough level to use that command anyway.\n",
-                u->name);
-    return;
-  }
-  /* check to see is the user has previously been given the command */
-  if (has_gcom(u, cmd->id)) {
-    write_user(user,
-               "You cannot ban a command that a user has been specifically given.\n");
-    return;
-  }
-  if (has_xcom(u, cmd->id)) {
-    /* user already has the command banned, so unban it */
-    if (!set_xgcom(user, u, cmd->id, 1, 0)) {
-      /* XXX: Maybe emit some sort of error? */
-      return;
-    }
-    vwrite_user(user, "You have unbanned the \"%s\" command for %s\n",
-                word[2], u->name);
-    vwrite_user(u,
-                "The command \"%s\" has been unbanned and you can use it again.\n",
-                word[2]);
-    sprintf(text, "%s ~FGUNXCOM~RS'd the command \"%s\"\n", user->name,
-            word[2]);
-    add_history(u->name, 1, text);
-    write_syslog(SYSLOG, 1, "%s UNXCOM'd the command \"%s\" for %s\n",
-                 user->name, word[2], u->name);
-  } else {
-    /* user does not have the command banned, so ban it */
-    if (!set_xgcom(user, u, cmd->id, 1, 1)) {
-      /* XXX: Maybe emit some sort of error? */
-      return;
-    }
-    vwrite_user(user, "You have banned the \"%s\" command for %s\n", word[2],
-                u->name);
-    vwrite_user(u, "You have been banned from using the command \"%s\".\n",
-                word[2]);
-    sprintf(text, "%s ~FRXCOM~RS'd the command \"%s\"\n", user->name,
-            word[2]);
-    add_history(u->name, 1, text);
-    write_syslog(SYSLOG, 1, "%s XCOM'd the command \"%s\" for %s\n",
-                 user->name, word[2], u->name);
-  }
-}
-
-
-/*
- * stop a user from using a certain command
- */
-void
-user_gcom(UR_OBJECT user)
-{
-  CMD_OBJECT cmd;
-  UR_OBJECT u;
-  size_t i, x;
-
-  if (word_count < 2) {
-    write_user(user, "Usage: gcom <user> [<command>]\n");
-    return;
-  }
-  u = get_user_name(user, word[1]);
-  if (!u) {
-    write_user(user, notloggedon);
-    return;
-  }
-  if (u == user) {
-    write_user(user, "You cannot give yourself any commands.\n");
-    return;
-  }
-  /* if no command is given, then just view given commands */
-  if (word_count < 3) {
-    write_user(user,
-               "+----------------------------------------------------------------------------+\n");
-    vwrite_user(user, "~OL~FCGiven commands for user~RS \"%s~RS\"\n",
-                u->recap);
-    write_user(user,
-               "+----------------------------------------------------------------------------+\n");
-    x = 0;
-    for (i = 0; i < MAX_GCOMS; ++i) {
-      if (u->gcoms[i] == -1) {
-        continue;
-      }
-      for (cmd = first_command; cmd; cmd = cmd->next) {
-        if (cmd->id == u->gcoms[i]) {
-          break;
-        }
-      }
-      if (!cmd) {
-        /* XXX: Maybe emit some sort of error? */
-        continue;
-      }
-      vwrite_user(user, "~OL%s~RS (level %d)\n", cmd->name, cmd->level);
-      ++x;
-    }
-    if (!x) {
-      write_user(user, "User has no given commands.\n");
-    }
-    write_user(user,
-               "+----------------------------------------------------------------------------+\n\n");
-    return;
-  }
-  if (u->level >= user->level) {
-    write_user(user,
-               "You cannot give commands to a user with the same or higher level as yourself.\n");
-    return;
-  }
-  /* FIXME: command search order is different than command_table/exec_com()
-   * because it uses the alpha sorted command list instead! */
-  i = strlen(word[2]);
-  for (cmd = first_command; cmd; cmd = cmd->next) {
-    if (!strncmp(word[2], cmd->name, i)) {
-      break;
-    }
-  }
-  if (!cmd) {
-    write_user(user, "That command does not exist.\n");
-    return;
-  }
-  if (u->level >= cmd->level) {
-    vwrite_user(user, "%s can already use that command.\n", u->name);
-    return;
-  }
-  if (user->level < cmd->level) {
-    write_user(user,
-               "You cannot use that command, so you cannot give it to others.\n");
-    return;
-  }
-  /* check to see if the user has previously been banned from using the command */
-  if (has_xcom(u, cmd->id)) {
-    write_user(user,
-               "You cannot give a command to a user that already has it banned.\n");
-    return;
-  }
-  if (has_gcom(u, cmd->id)) {
-    /* user already has the command given, so ungive it */
-    if (!set_xgcom(user, u, cmd->id, 0, 0)) {
-      /* XXX: Maybe emit some sort of error? */
-      return;
-    }
-    vwrite_user(user, "You have removed the given command \"%s\" for %s~RS\n",
-                word[2], u->recap);
-    vwrite_user(u,
-                "Access to the given command \"%s\" has now been taken away from you.\n",
-                word[2]);
-    sprintf(text, "%s ~FRUNGCOM~RS'd the command \"%s\"\n", user->name,
-            word[2]);
-    add_history(u->name, 1, text);
-    write_syslog(SYSLOG, 1, "%s UNGCOM'd the command \"%s\" for %s\n",
-                 user->name, word[2], u->name);
-  } else {
-    /* user does not have the command given, so give it */
-    if (!set_xgcom(user, u, cmd->id, 0, 1)) {
-      /* XXX: Maybe emit some sort of error? */
-      return;
-    }
-    vwrite_user(user, "You have given the \"%s\" command for %s\n", word[2],
-                u->name);
-    vwrite_user(u, "You have been given access to the command \"%s\".\n",
-                word[2]);
-    sprintf(text, "%s ~FGGCOM~RS'd the command \"%s\"\n", user->name,
-            word[2]);
-    add_history(u->name, 1, text);
-    write_syslog(SYSLOG, 1, "%s GCOM'd the command \"%s\" for %s\n",
-                 user->name, word[2], u->name);
-  }
-}
-
-
-/*
- * set command bans or unbans
- * banned=0 or 1 - 0 is unban and 1 is ban
- * set=0 or 1 - 0 is unset and 1 is set
- */
-int
-set_xgcom(UR_OBJECT user, UR_OBJECT u, int id, int banned, int set)
-{
-  char filename[80];
-  FILE *fp;
-  int *xgcom, key, value;
-  size_t cnt, i, max_xgcom;
-
-  if (banned) {
-    xgcom = u->xcoms;
-    max_xgcom = MAX_XCOMS;
-  } else {
-    xgcom = u->gcoms;
-    max_xgcom = MAX_GCOMS;
-  }
-  if (set) {
-    key = -1;
-    value = id;
-  } else {
-    key = id;
-    value = -1;
-  }
-  for (i = 0; i < max_xgcom; ++i) {
-    if (xgcom[i] == key) {
-      break;
-    }
-  }
-  if (i >= max_xgcom) {
-    if (banned) {
-      if (set) {
-        vwrite_user(user,
-                    "%s has had the maximum amount of commands banned.\n",
-                    u->name);
-      } else {
-        write_user(user, "ERROR: Could not unban that command.\n");
-      }
-    } else {
-      if (set) {
-        vwrite_user(user,
-                    "%s has had the maximum amount of commands given.\n",
-                    u->name);
-      } else {
-        write_user(user, "ERROR: Could not ungive that command.\n");
-      }
-    }
-    return 0;
-  }
-  xgcom[i] = value;
-  /* write out the commands to a file */
-  sprintf(filename, "%s/%s/%s.C", USERFILES, USERCOMMANDS, u->name);
-  fp = fopen(filename, "w");
-  if (!fp) {
-    write_user(user, "ERROR: Unable to open the command list file.\n");
-    write_syslog(SYSLOG | ERRLOG, 1,
-                 "Unable to open %s's command list in set_xgcom().\n",
-                 u->name);
-    return 0;
-  }
-  cnt = 0;
-  for (i = 0; i < MAX_XCOMS; ++i) {
-    if (u->xcoms[i] == -1) {
-      continue;
-    }
-    fprintf(fp, "0 %d\n", u->xcoms[i]);
-    ++cnt;
-  }
-  for (i = 0; i < MAX_GCOMS; ++i) {
-    if (u->gcoms[i] == -1) {
-      continue;
-    }
-    fprintf(fp, "1 %d\n", u->gcoms[i]);
-    ++cnt;
-  }
-  fclose(fp);
-  if (!cnt) {
-    remove(filename);
-  }
-  return 1;
-}
-
-
-/*
- * read any banned commands that a user may have
- */
-int
-get_xgcoms(UR_OBJECT user)
-{
-  char filename[80];
-  FILE *fp;
-  int f;
-  int tmp;
-  int type;
-  size_t xi, gi;
-
-  sprintf(filename, "%s/%s/%s.C", USERFILES, USERCOMMANDS, user->name);
-  fp = fopen(filename, "r");
-  if (!fp) {
-    return 0;
-  }
-  xi = 0;
-  gi = 0;
-  for (f = fscanf(fp, "%d %d", &type, &tmp); f == 2;
-       f = fscanf(fp, "%d %d", &type, &tmp)) {
-    if (!type) {
-      user->xcoms[xi++] = tmp;
-    } else {
-      user->gcoms[gi++] = tmp;
-    }
-  }
-  fclose(fp);
-  return 1;
-}
-
-
-/*
- * Check to see if a command has been given to a user
+ * Check to see if a command has been given to a user TODO: REMOVE THIS
  */
 int
 has_gcom(UR_OBJECT user, int cmd_id)
@@ -4478,7 +3801,7 @@ has_gcom(UR_OBJECT user, int cmd_id)
 
 
 /*
- * Check to see if a command has been taken from a user
+ * Check to see if a command has been taken from a user TODO: REMOVE THIS
  */
 int
 has_xcom(UR_OBJECT user, int cmd_id)
@@ -4605,10 +3928,6 @@ dump_to_file(UR_OBJECT user)
   int ucount, dcount, rmcount, cmdcount, lcount;
   int tsize;
   int drcount;
-#ifdef NETLINKS
-  NL_OBJECT nl;
-  int nlcount;
-#endif
   enum lvl_value lvl;
   int days, hours, mins, secs;
   int i, j;
@@ -4761,13 +4080,6 @@ dump_to_file(UR_OBJECT user)
       ucount * (sizeof *u) + rmcount * (sizeof *rm) + dcount * (sizeof *d) +
       cmdcount * (sizeof *cmd) + (sizeof *amsys) +
       lcount * (sizeof *last_login_info);
-#ifdef NETLINKS
-    nlcount = 0;
-    for (nl = nl_first; nl; nl = nl->next) {
-      ++nlcount;
-    }
-    tsize += nlcount * (sizeof *nl);
-#endif
     fprintf(fp,
             "------------------------------------------------------------------------------\n");
     fprintf(fp, "Memory Object Allocation %s\n", long_date(1));
@@ -4786,11 +4098,6 @@ dump_to_file(UR_OBJECT user)
     fprintf(fp, "  %-16s: %8d * %8d bytes = %8d total bytes\n", "last logins",
             lcount, (int) (sizeof *last_login_info),
             lcount * (int) (sizeof *last_login_info));
-#ifdef NETLINKS
-    fprintf(fp, "  %-16s: %8d * %8d bytes = %8d total bytes\n",
-            "netlinks", nlcount, (int) (sizeof *nl),
-            nlcount * (int) (sizeof *nl));
-#endif
     fprintf(fp,
             "------------------------------------------------------------------------------\n");
     fprintf(fp, "  %-16s: %12.3f Mb             %8d total bytes\n", "total",
@@ -4834,11 +4141,6 @@ dump_to_file(UR_OBJECT user)
             "Uptime      : %d day%s, %d hour%s, %d minute%s, %d second%s\n",
             days, PLTEXT_S(days), hours, PLTEXT_S(hours), mins,
             PLTEXT_S(mins), secs, PLTEXT_S(secs));
-#ifdef NETLINKS
-    fprintf(fp, "Netlinks    : Compiled and running\n");
-#else
-    fprintf(fp, "Netlinks    : Not currently compiled or running\n");
-#endif
     switch (amsys->resolve_ip) {
     default:
       fprintf(fp, "IP Resolve  : Off\n");
@@ -5079,14 +4381,6 @@ shackle(UR_OBJECT user)
     write_user(user, "You cannot shackle yourself!\n");
     return;
   }
-#ifdef NETLINKS
-  if (!u->room) {
-    vwrite_user(user,
-                "%s~RS is currently off site and cannot be shackled there.\n",
-                u->recap);
-    return;
-  }
-#endif
   if (u->level >= user->level) {
     write_user(user,
                "You cannot shackle someone of the same or higher level as yourself.\n");

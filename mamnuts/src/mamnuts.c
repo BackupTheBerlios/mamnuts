@@ -2871,7 +2871,6 @@ load_user_details(UR_OBJECT user)
     user->accreq = -1;
   }
   get_macros(user);
-  get_xgcoms(user);
   read_user_reminders(user);
   load_flagged_users(user);
   return 1;
@@ -3111,7 +3110,6 @@ load_user_details_old(UR_OBJECT user)
     user->accreq = -1;
   }
   get_macros(user);
-  get_xgcoms(user);
   read_user_reminders(user);
   load_flagged_users(user);
   return 1;
