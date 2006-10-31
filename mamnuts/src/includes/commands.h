@@ -221,7 +221,6 @@
   ML_ENTRY((HIDEEMAIL, "hide",     "makes your email visible to only you and the law, or everyone (toggle)")) \
   ML_ENTRY((PAGER,     "pager",    "sets how many lines per page of the pager you get"                     )) \
   ML_ENTRY((COLOUR,    "colour",   "display in colour or not (toggle)"                                     )) \
-  ML_ENTRY((ROOM,      "room",     "lets you log back into the room you left from, if public (toggle)"     )) \
   ML_ENTRY((FWD,       "autofwd",  "lets you receive smails via your email address."                       )) \
   ML_ENTRY((PASSWD,    "password", "lets you see your password when entering it at the login (toggle)"     )) \
   ML_ENTRY((RDESC,     "rdesc",    "lets you ignore room descriptions (toggle)"                            )) \

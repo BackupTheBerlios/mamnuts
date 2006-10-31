@@ -7262,18 +7262,6 @@ set_attributes(UR_OBJECT user)
     user->age = tmp;
     vwrite_user(user, "Age now set to: %d\n", user->age);
     return;
-/*  case SETWRAP:
-    switch (user->wrap) {
-    case 0:
-      user->wrap = 1;
-      write_user(user, "Word wrap now ON\n");
-      break;
-    case 1:
-      user->wrap = 0;
-      write_user(user, "Word wrap now OFF\n");
-      break;
-    }
-    return; */
   case SETEMAIL:
     strcpy(word[2], colour_com_strip(word[2]));
     if (strlen(word[2]) > 80) {
@@ -7345,18 +7333,6 @@ set_attributes(UR_OBJECT user)
       user->pager = 23;
     }
     vwrite_user(user, "Pager length now set to: %d\n", user->pager);
-    return;
-  case SETROOM:
-    switch (user->lroom) {
-    case 0:
-      user->lroom = 1;
-      write_user(user, "You will log on into the room you left from.\n");
-      break;
-    case 1:
-      user->lroom = 0;
-      write_user(user, "You will log on into the main room.\n");
-      break;
-    }
     return;
   case SETFWD:
     if (!*user->email) {
