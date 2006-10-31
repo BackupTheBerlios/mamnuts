@@ -74,3 +74,7 @@ SECURITY FIX: avoided a buffer overflow on .wizlist by removing it. Take in
 consideration that this bug puts your talker (and talker account) security in
 risk, and is present in ANY VERSION of Amnuts and Mamnuts!!! More information
 about this bug will be given by request.
+
+v1.8.4:
+FIX: Fixed a bug that made any version of (M)Amnuts blow its guts off with a
+segfault.
