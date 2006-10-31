@@ -41,16 +41,12 @@ main(int argc, char **argv)
   /* Startup and do initial counts and parses */
   init_signals();
   create_system();
-  write_syslog(SYSLOG, 0,
-               "------------------------------------------------------------------------------\nSERVER BOOTING\n");
-  printf
-    ("\n------------------------------------------------------------------------------\n");
+  write_syslog(SYSLOG, 0, "------------------------------------------------------------------------------\nSERVER BOOTING\n");
+  printf("\n------------------------------------------------------------------------------\n");
   printf("Mamnuts %s server booting %s\n", MAMNUTSVER, long_date(1));
-  printf
-    ("------------------------------------------------------------------------------\n");
+  printf("------------------------------------------------------------------------------\n");
   printf("Node name   : %s\n", amsys->uts.nodename);
-  printf("Running on  : %s %s %s %s\n", amsys->uts.machine,
-         amsys->uts.sysname, amsys->uts.release, amsys->uts.version);
+  printf("Running on  : %s %s %s %s\n", amsys->uts.machine,amsys->uts.sysname, amsys->uts.release, amsys->uts.version);
 #ifdef NETLINKS
   printf("Netlinks    : Enabled\n");
 #else
@@ -2944,13 +2940,7 @@ save_user_details(UR_OBJECT user, int save_current)
               user->expire, (int) (time(0) + (USER_EXPIRES * 86400)));
     }
   }
-  if (save_current) {
-    fprintf(fp, "%-13.13s %s %s\n", userfile_options[USERDB_LAST_SITE],
-            user->site, user->room->name);
-  } else {
-    fprintf(fp, "%-13.13s %s %s\n", userfile_options[USERDB_LAST_SITE],
-            user->last_site, user->logout_room);
-  }
+  fprintf(fp, "%-13.13s %s %s\n", userfile_options[USERDB_LAST_SITE], user->last_site, user->logout_room);
   fprintf(fp, "%-13.13s %s\n", userfile_options[USERDB_MAIL_VERIFY],
           *user->verify_code ? user->verify_code : "#UNSET");
   fprintf(fp, "%-13.13s %s\n", userfile_options[USERDB_DESCRIPTION],
