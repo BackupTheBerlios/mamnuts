@@ -78,3 +78,4 @@ about this bug will be given by request.
 v1.8.4:
 FIX: Fixed a bug that made any version of (M)Amnuts blow its guts off with a
 segfault. This also means that .set room is now gone.
+FIX: .sto had a bug (my fault, I'm an asshole), but it is now fixed.
