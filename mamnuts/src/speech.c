@@ -248,10 +248,10 @@ sto(UR_OBJECT user, char *inpstr)
   }
   name = user->vis ? user->recap : invisname;
   n = u->vis ? u->recap : invisname;
-  sprintf(text, "~OL!~RS %s~RS ~OL%ss~RS to ~OL%s~RS: %s~RS\n", name, type, inpstr, n);
+  sprintf(text, "~OL!~RS %s~RS ~OL%ss~RS to ~OL%s~RS: %s~RS\n", name, type, n, inpstr);
   record_shout(text);
   write_room_except(NULL, text, user);
-  vwrite_user(user, "~OL!~RS You ~OL%s~RS to ~OL%s~RS: %s~RS\n", type, inpstr, n);
+  vwrite_user(user, "~OL!~RS You ~OL%s~RS to ~OL%s~RS: %s~RS\n", type, n, inpstr);
 }
 
 /*
