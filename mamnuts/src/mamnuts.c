@@ -7481,7 +7481,6 @@ show_attributes(UR_OBJECT user)
 {
   static const char *const onoff[] = { "Off", "On" };
   static const char *const shide[] = { "Showing", "Hidden" };
-  static const char *const rm[] = { "Main room", "Last room in" };
   static const char *const cmd[] = { "Level", "Function" };
   static const char *const revbuf[] = { "Normal", "Reversed" };
   int i, cnt;
