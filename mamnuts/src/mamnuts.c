@@ -7550,10 +7550,6 @@ show_attributes(UR_OBJECT user)
       vwrite_user(user, "| %-10.10s : ~OL%-61.61s~RS |\n", setstr[i].type,
                   text);
       break;
-    case SETROOM:
-      vwrite_user(user, "| %-10.10s : ~OL%-61.61s~RS |\n", setstr[i].type,
-                  rm[user->lroom]);
-      break;
     case SETFWD:
       vwrite_user(user, "| %-10.10s : ~OL%-61.61s~RS |\n", setstr[i].type,
                   onoff[user->autofwd]);
