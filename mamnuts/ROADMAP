@@ -10,20 +10,17 @@ MAMNUTS is to provide a secure an stable code base until AmNUTS 2.3.0 is done.
 
 --- Towards full security and stability:
 
-v1.8.4:
+v1.8.5:
 Implement a SpamGuard system. Better yet, if time lets me do it, implement
 something like Uzume suggests in
 http://amnuts.talker.com/cgi-bin/AMboard/UltraBoard.pl?Action=ShowPost&Board=bugs&Post=73&Idle=0&Sort=0&Order=Descend&Page=0&Session=
 
-v1.8.5:
+v1.8.6:
 Warnings cleanup (important for compatibility issues).
 
-v1.8.6:
+v1.8.7:
 Remove smail related code: .smail .rmail and such commands AND everything that
 sends or uses it's code.
-
-v1.8.7:
-Uncomment and finish tmore's implementation...
 
 v1.9.0:
 Fix #36: Revert "multi-line paste" changes. It will reduce usability but fix a
@@ -37,6 +34,9 @@ This will be (hopefully) a bug-free talker base.
 
 
 --- Improoving functionality:
+
+v2.0.1:
+Uncomment and finish tmore's implementation...
 
 v2.1.0:
 The 'AFK' function (including command, calls, presentation et all) should be
