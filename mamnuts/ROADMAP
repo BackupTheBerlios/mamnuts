@@ -5,24 +5,29 @@ MAMNUTS ROADMAP
 
 Following the directions that can be read at
 http://mindboosternoori.blogspot.com/2005/11/building-talker.html , the idea os
-MAMNUTS is to provide a secure an stable code base until AmNUTS 2.3.0 is done.
+MAMNUTS is to provide a secure an stable code base, since the only alternatives
+doing that nowadays are lacking a lot of features...
 
 
 --- Towards full security and stability:
 
-v1.8.5:
+v1.8.6:
+Remove everything netlinks-related.
+
+v1.8.7:
 Implement a SpamGuard system. Better yet, if time lets me do it, implement
 something like Uzume suggests in
 http://amnuts.talker.com/cgi-bin/AMboard/UltraBoard.pl?Action=ShowPost&Board=bugs&Post=73&Idle=0&Sort=0&Order=Descend&Page=0&Session=
+Pix might have some code for this.
 
-v1.8.6:
+v1.8.8:
 Warnings cleanup (important for compatibility issues).
 
-v1.8.7:
+v1.9.0:
 Remove smail related code: .smail .rmail and such commands AND everything that
 sends or uses it's code.
 
-v1.9.0:
+v1.9.1:
 Fix #36: Revert "multi-line paste" changes. It will reduce usability but fix a
 security issue. 
 

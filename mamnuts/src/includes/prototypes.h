@@ -544,6 +544,7 @@ char *censor_swear_words(char *);
 char *colour_com_strip(const char *);
 void strtoupper(char *);
 void strtolower(char *);
+void strtoname(char *);
 int is_number(const char *);
 char *istrstr(char *, const char *);
 char *replace_string(char *, const char *, const char *);

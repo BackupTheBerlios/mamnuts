@@ -396,6 +396,7 @@ smail(UR_OBJECT user, char *inpstr)
     }
     inpstr = user->malloc_start;
   }
+  strtoname(user->mail_to);
   send_mail(user, user->mail_to, inpstr, 0);
   send_copies(user, inpstr);
   *user->mail_to = '\0';

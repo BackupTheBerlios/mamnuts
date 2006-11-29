@@ -373,6 +373,20 @@ strtolower(char *str)
 
 
 /*
+ * Convert string to lower case
+ */
+void
+strtoname(char *str)
+{
+  *str = toupper(*str);
+  ++str;
+  for (; *str; ++str) {
+    *str = tolower(*str);
+  }
+}
+
+
+/*
  * Returns 1 if string is a positive number
  */
 int
