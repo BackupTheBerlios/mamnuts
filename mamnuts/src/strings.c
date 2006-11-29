@@ -373,7 +373,7 @@ strtolower(char *str)
 
 
 /*
- * Convert string to lower case
+ * Convert string to name (first char is upper, rest is lower)
  */
 void
 strtoname(char *str)

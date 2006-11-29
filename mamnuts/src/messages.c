@@ -363,11 +363,6 @@ smail(UR_OBJECT user, char *inpstr)
         return;
       }
       if (u) {
-        if (u == user && user->level < ARCH) {
-          write_user(user,
-                     "Trying to mail yourself is the fifth sign of madness.\n");
-          return;
-        }
         /* FIXME: Should check for offline users as well */
         if (check_igusers(u, user) && user->level < GOD) {
           vwrite_user(user, "%s~RS is ignoring smails from you.\n", u->recap);
