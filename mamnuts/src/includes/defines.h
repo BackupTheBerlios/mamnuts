@@ -42,7 +42,7 @@
  * version information
  * Use USERVER for whatever you want, but please don't change MAMNUTSVER and NUTSVER
  */
-#define MAMNUTSVER   "1.8.5"
+#define MAMNUTSVER   "1.8.6-CVS"
 #define NUTSVER     "3.3.3"
 #define USERVER     "0.3"
 #define TALKER_NAME "Your Talker's Name Here"
