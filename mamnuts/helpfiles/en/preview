@@ -4,3 +4,5 @@
 This command will allow you to preview a picture before you tell it to a
 user or the room you are currently in. If no picture name is given then
 a list of all the pictures on file will be shown.
+
+SEE ALSO: picture

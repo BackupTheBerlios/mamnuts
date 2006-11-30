@@ -1,6 +1,8 @@
 ~OLComando :~RS preview
 ~OLUso     :~RS preview [<imagem>]
 
-Este comando permite que faças uma pré-visualização de uma imagem antes
-de a mostrares a um utilizador ou à sala onde estás. Se nenhum nome fôr
-especificado, irá ser mostrada uma lista de todas as imagens.
+Este comando permite que facas uma pre-visualizacao de uma imagem antes
+de a mostrares a um utilizador ou 'a sala onde esta's. Se nenhum nome for
+especificado, ira' ser mostrada uma lista de todas as imagens.
+
+VER TAMBEM: picture
