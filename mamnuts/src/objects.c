@@ -1,13 +1,11 @@
 /****************************************************************************
-         Amnuts version 2.3.0 - Copyright (C) Andrew Collington, 2003
-                      Last update: 2003-08-04
-
-                              amnuts@talker.com
-                          http://amnuts.talker.com/
-
-                                   based on
-
-   NUTS version 3.3.3 (Triple Three :) - Copyright (C) Neil Robertson 1996
+ * MAMNUTS, based on:
+ *
+ *       Amnuts version 2.3.0 - Copyright (C) Andrew Collington, 2003
+ *
+ *                                 based on
+ *
+ * NUTS version 3.3.3 (Triple Three :) - Copyright (C) Neil Robertson 1996
  ***************************************************************************/
 
 #include "defines.h"
@@ -358,7 +356,7 @@ reset_user(UR_OBJECT user)
 
 
 /*
- * Destruct an object.
+ * Destruct a user
  */
 void
 destruct_user(UR_OBJECT user)
@@ -380,8 +378,15 @@ destruct_user(UR_OBJECT user)
       user->next->prev = user->prev;
     }
   }
+  /* TODO: not having the free() we never get rid of allocated unused memory
+   *       but having makes the talker crash if you inject enough garbage to
+   *       a connected socket... This should be fixed, but while not, it's
+   *       better to have it commented.
+   */
+/*
   memset(user, 0, (sizeof *user));
   free(user);
+*/
   destructed = 1;
 }
 
