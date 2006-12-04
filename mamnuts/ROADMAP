@@ -11,16 +11,16 @@ doing that nowadays are lacking a lot of features...
 
 --- Towards full security and stability:
 
-v1.8.6:
+v1.8.7:
 Remove everything netlinks-related.
 
-v1.8.7:
+v1.8.8:
 Implement a SpamGuard system. Better yet, if time lets me do it, implement
 something like Uzume suggests in
 http://amnuts.talker.com/cgi-bin/AMboard/UltraBoard.pl?Action=ShowPost&Board=bugs&Post=73&Idle=0&Sort=0&Order=Descend&Page=0&Session=
 Pix might have some code for this.
 
-v1.8.8:
+v1.8.9:
 Warnings cleanup (important for compatibility issues).
 
 v1.9.0:
