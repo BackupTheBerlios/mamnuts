@@ -5308,6 +5308,29 @@ exec_com(UR_OBJECT user, char *inpstr, enum cmd_value defaultcmd)
    *
    * Then again, you might not be wondering ;)
    */
+
+/*MARADO*/
+for (cmd=first_command;cmd!=NULL;cmd=cmd->next) {
+  if (cmd->id==com_num) {
+    if (user->room!=NULL && (has_gcom(user,cmd->id))) {
+      ++cmd->count;
+      break;
+      }
+    if (user->room!=NULL && (has_xcom(user,cmd->id))) {
+      write_user(user,"You cannot currently use that command.\n");  return 0;
+      }
+    if (user->room!=NULL && (cmd->min_lev > user->level)) {
+      write_user(user,"Unknown command.\n");  return 0;
+      }
+    ++cmd->count;
+    break;
+    }
+  } /* end for */
+
+
+#ifdef MERDA
+
+
   cmdid = (enum cmd_value) (com_tab - command_table);
   for (cmd = first_command; cmd; cmd = cmd->next) {
     if ((enum cmd_value) cmd->id == cmdid) {
@@ -5355,56 +5378,12 @@ exec_com(UR_OBJECT user, char *inpstr, enum cmd_value defaultcmd)
   /* FIXME: Get rid of this! Needed for some legacy testing for now */
   com_num = cmd ? (enum cmd_value) cmd->id : COUNT;
 
-#ifdef NETLINKS
-  /*
-   * See if user has gone across a netlink and if so then intercept
-   * certain commands to be run on home site
-   */
-  if (!user->room) {
-    switch (cmd ? (enum cmd_value) cmd->id : COUNT) {
-    case HOME:
-    case QUIT:
-    case MODE:
-    case PROMPT:
-    case COLOUR:
-    case SUICIDE:
-    case CHARECHO:
-      write_user(user, "~FY~OL*** Home execution ***\n");
-      break;
-    default:
-      action_nl(user, word[0], inpstr);
-      no_prompt = 1;
-      return 1;
-      break;                    /* should not need this */
-    }
-  }
-  /* Dont want certain commands executed by remote users */
-  if (user->type == REMOTE_TYPE) {
-    switch (cmd->id) {
-    case PASSWD:
-    case ENTPRO:
-    case ACCREQ:
-    case CONN:
-    case DISCONN:
-    case SHUTDOWN:
-    case REBOOT:
-    case SETAUTOPROMO:
-    case DELETE:
-    case SET:
-    case PURGE:
-    case EXPIRE:
-    case LOGGING:
-      write_user(user, "Sorry, remote users cannot use that command.\n");
-      return 0;
-      break;                    /* should not need this */
-    default:
-      break;
-    }
-  }
-#endif
-
   /* Main switch */
-  switch (cmd->id) {
+/*  switch (cmd->id) { */
+
+
+#endif 
+  switch (com_num) {
   /* VISUAL is buggy and won't compile under some circumstances. Use at your own risk! */
   /* case VISUAL:
      visual(user,0);
@@ -8595,15 +8574,6 @@ show_version(UR_OBJECT user)
   vwrite_user(user,
               "| Personal rooms active    : ~OL%-3s~RS   Maximum user idle time   : ~OL%-3d~RS mins~RS       |\n",
               noyes[amsys->personal_rooms], amsys->user_idle_time / 60);
-  if (user->level >= WIZ) {
-#ifdef NETLINKS
-    write_user(user,
-               "| Compiled netlinks        : ~OLYES~RS                                             |\n");
-#else
-    write_user(user,
-               "| Compiled netlinks        : ~OLNO~RS                                              |\n");
-#endif
-  }
   /* YOU MUST *NOT* ALTER THE REMAINING LINES */
   write_user(user,
              "+----------------------------------------------------------------------------+\n");
@@ -8616,14 +8586,7 @@ show_version(UR_OBJECT user)
   write_user(user,
              "+----------------------------------------------------------------------------+\n");
   write_user(user,
-             "| Runnung AmNUTS 2.3.0 CVS version from 2005-11-23 (C) Andrew Collington     |\n");
-  write_user(user,
-             "| Running Ardant's Ident Daemon (ArIdent) code, version 2.0.2                |\n");
-  write_user(user,
-             "| Running Ardant's Universal Pager code                                      |\n");
-/* YOU MUST UN-COMMENT THE FOLLOWING LINE IF YOU'RE USING TMORE;                                 */
-/*  write_user(user,
-             "| Running Pix's tmore code (converted from Transylvania)                     |\n");*/
+             "| Running AmNUTS 2.3.0 CVS version from 2005-11-23 (C) Andrew Collington     |\n");
   write_user(user,
              "+----------------------------------------------------------------------------+\n");
 }
