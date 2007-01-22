@@ -86,3 +86,7 @@ FIX: Fixed a bug on .smail .
 v1.8.6:
 FIX: Fixed a bug in the user handler, that would crash the talker. This issue
 exists since AmNUTS 2.3.0 beta. Upgrading is highly recommended.
+
+v1.8.7:
+FIX: Fixed a bug in the output parser, that made a single ~ or ^ in the end of
+a string output ~RS.

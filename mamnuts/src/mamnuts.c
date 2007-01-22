@@ -233,7 +233,7 @@ main(int argc, char **argv)
         }
       }
       if (!len) {
-        write_level(WIZ, 1, NORECORD, "~FY<ArIdent Daemon Disconnected>~RS\n",
+        write_level(WIZ, 1, NORECORD, "~FY<ArIdent Daemon Disconnected>\n",
                     NULL);
         amsys->ident_state = 0;
         continue;
@@ -6789,7 +6789,7 @@ help_nuts_credits(UR_OBJECT user)
               "~BRNUTS version %s, Copyright (C) Neil Robertson 1996.\n\n",
               NUTSVER);
   write_user(user,
-             "~BM             ~BB             ~BC             ~BG             ~BY             ~BR             ~RS\n");
+             "~BM             ~BB             ~BC             ~BG             ~BY             ~BR             \n");
   write_user(user,
              "NUTS stands for Neil's Unix Talk Server, a program which started out as a\n");
   write_user(user,
@@ -6815,7 +6815,7 @@ help_nuts_credits(UR_OBJECT user)
   write_user(user,
              "remain so for the forseeable future.\n\nNeil Robertson - November 1996.\n");
   write_user(user,
-             "~BM             ~BB             ~BC             ~BG             ~BY             ~BR             ~RS\n\n");
+             "~BM             ~BB             ~BC             ~BG             ~BY             ~BR             \n\n");
 }
 
 
@@ -6827,7 +6827,7 @@ void
 help_amnuts_credits(UR_OBJECT user)
 {
   write_user(user,
-             "~BM             ~BB             ~BC             ~BG             ~BY             ~BR             ~RS\n\n");
+             "~BM             ~BB             ~BC             ~BG             ~BY             ~BR             \n\n");
   vwrite_user(user,
               "~OL~FCMamnuts version %s~RS, based on Amnuts version 2.3.0 CVS from 21-11-2005\n",
               MAMNUTSVER);
@@ -6848,7 +6848,7 @@ help_amnuts_credits(UR_OBJECT user)
   write_user(user,
              "   -- The Amnuts Development Group\n\n(for NUTS credits, see \".help nuts\")\n");
   write_user(user,
-             "\n~BM             ~BB             ~BC             ~BG             ~BY             ~BR             ~RS\n\n");
+             "\n~BM             ~BB             ~BC             ~BG             ~BY             ~BR             \n\n");
 }
 
 
@@ -7119,7 +7119,7 @@ examine(UR_OBJECT user)
   }
   idle = (int) (time(0) - u->last_input) / 60;
   if (u->malloc_start) {
-    vwrite_user(user, "Ignoring all: ~FCUsing Line Editor~RS\n");
+    vwrite_user(user, "Ignoring all: ~FCUsing Line Editor\n");
   } else {
     vwrite_user(user, "Ignoring all: %s\n", noyes[u->ignall]);
   }
@@ -8463,7 +8463,7 @@ display_colour(UR_OBJECT user)
     return;
   }
   for (i = 0; colours[i]; ++i) {
-    vwrite_user(user, "~%s: %sMamnuts version %s VIDEO TEST~RS\n",
+    vwrite_user(user, "~%s: %sMamnuts version %s VIDEO TEST\n",
                 colours[i], colours[i], MAMNUTSVER);
   }
 }

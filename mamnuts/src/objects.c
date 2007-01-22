@@ -965,7 +965,7 @@ get_user_name(UR_OBJECT user, const char *name)
         break;
       }
       /* FIXME: Bounds checking */
-      strcat(text, found++ % 8 ? "~RS  " : "~RS\n  ");
+      strcat(text, found++ % 8 ? "~RS  " : "\n  ");
       strcat(text, u->recap);
       last = u;
     }
