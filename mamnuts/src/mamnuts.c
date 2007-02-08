@@ -5309,28 +5309,6 @@ exec_com(UR_OBJECT user, char *inpstr, enum cmd_value defaultcmd)
    * Then again, you might not be wondering ;)
    */
 
-/*MARADO*/
-for (cmd=first_command;cmd!=NULL;cmd=cmd->next) {
-  if (cmd->id==com_num) {
-    if (user->room!=NULL && (has_gcom(user,cmd->id))) {
-      ++cmd->count;
-      break;
-      }
-    if (user->room!=NULL && (has_xcom(user,cmd->id))) {
-      write_user(user,"You cannot currently use that command.\n");  return 0;
-      }
-    if (user->room!=NULL && (cmd->min_lev > user->level)) {
-      write_user(user,"Unknown command.\n");  return 0;
-      }
-    ++cmd->count;
-    break;
-    }
-  } /* end for */
-
-
-#ifdef MERDA
-
-
   cmdid = (enum cmd_value) (com_tab - command_table);
   for (cmd = first_command; cmd; cmd = cmd->next) {
     if ((enum cmd_value) cmd->id == cmdid) {
@@ -5382,7 +5360,6 @@ for (cmd=first_command;cmd!=NULL;cmd=cmd->next) {
 /*  switch (cmd->id) { */
 
 
-#endif 
   switch (com_num) {
   /* VISUAL is buggy and won't compile under some circumstances. Use at your own risk! */
   /* case VISUAL:
